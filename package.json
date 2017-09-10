@@ -1,0 +1,12 @@
+{
+    "name": "my-python-app",
+    "version": "1.0.0",
+    "author": {
+        "name": "matatsuna",
+        "email": "matatsuna@gmail.com"
+    },
+    "scripts": {
+        "docker:build": "docker build --tag my-python-app .",
+        "docker:test": "docker run -it --rm --name my-running-app my-python-app"
+    }
+}
