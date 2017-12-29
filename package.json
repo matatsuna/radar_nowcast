@@ -1,0 +1,25 @@
+{
+  "name": "radar_nowcast",
+  "version": "1.0.0",
+  "description": "現在の天気をツイートするbot",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/matatsuna/radar_nowcast.git"
+  },
+  "keywords": [
+    "twitter",
+    "bot",
+    "天気",
+    "weather"
+  ],
+  "author": "matatsuna <matatsuna@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/matatsuna/radar_nowcast/issues"
+  },
+  "homepage": "https://github.com/matatsuna/radar_nowcast#readme"
+}
