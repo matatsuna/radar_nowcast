@@ -3,12 +3,12 @@ import cheerio from 'cheerio';
 
 class RadarNowcat {
     constructor() {
-        this.temperature_now = 0;
-        this.temperature_max = 0;
-        this.temperature_min = 0;
-        this.rain_10 = 0;
-        this.rain_60 = 0;
-        this.sun_60 = 0;
+        this.temperature_now = '';
+        this.temperature_max = '';
+        this.temperature_min = '';
+        this.rain_10 = '';
+        this.rain_60 = '';
+        this.sun_60 = '';
         this.fetchTenk()
             .then(text => this.parseTenk(text))
             .then();
