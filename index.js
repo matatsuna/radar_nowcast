@@ -3,26 +3,24 @@ import cheerio from 'cheerio';
 import moment from 'moment';
 import fs from 'fs';
 import GifCreationService from 'gif-creation-service';
+import config from './config.json';
+import Twitter from 'twitter';
 
 class RadarNowcat {
     constructor() {
-        this.temperature_now = '';
-        this.temperature_max = '';
-        this.temperature_min = '';
-        this.rain_10 = '';
-        this.rain_60 = '';
-        this.sun_60 = '';
+        this.temperature = '';
+        this.rain = '';
+        this.sun = '';
         let now_mill = Date.now();
         this.now = moment(now_mill - (now_mill % (5 * 60 * 1000)));
         this.past = moment(now_mill - (now_mill % (5 * 60 * 1000)));
-        this.fetchPng().then(() => {
-            console.log('fin');
-        }).catch((e) => {
-            console.error(e);
+        this.future = moment(now_mill - (5 * 60 * 1000) - (now_mill % (5 * 60 * 1000)));
+        this.client = new Twitter({
+            consumer_key: config.twitter.consumer_key,
+            consumer_secret: config.twitter.consumer_secret,
+            access_token_key: config.twitter.access_token_key,
+            access_token_secret: config.twitter.access_token_secret
         });
-        // this.fetchTenk()
-        //     .then(text => this.parseTenk(text))
-        //     .then();
     }
     fetchTenk() {
         return new Promise((resolve) => {
@@ -36,49 +34,39 @@ class RadarNowcat {
     parseTenk(text) {
         return new Promise((resolve) => {
             const $ = cheerio.load(text);
-            this.temperature_now = $('.amedas-table-current ul:eq(0) li:eq(0)').text();
-            this.temperature_max = $('.amedas-table-current ul:eq(0) li:eq(1)').text();
-            this.temperature_min = $('.amedas-table-current ul:eq(0) li:eq(2)').text();
+            // console.log($('.amedas-current-list li');
+            let temperature_now = $('.amedas-current-list li').eq(0).text();
+            let temperature_max = $('.amedas-current-list li').eq(1).text();
+            let temperature_min = $('.amedas-current-list li').eq(2).text();
+            this.temperature = temperature_now + '\n' + temperature_max + '\n' + temperature_min;
 
-            this.rain_10 = $('.amedas-table-current ul:eq(1) li:eq(0)').text();
-            this.rain_60 = $('.amedas-table-current ul:eq(1) li:eq(1)').text();
+            let rain_10 = $('.amedas-current-list li').eq(3).text();
+            let rain_60 = $('.amedas-current-list li').eq(4).text();
+            this.rain = rain_10 + '\n' + rain_60;
 
-            this.sun_60 = $('.amedas-table-current ul:eq(3) li:eq(0)').text();
+            this.sun = $('.amedas-current-list li').eq(7).text();
+
             resolve();
-        });
+        }).catch((e) => { console.error(e) });
     }
     fetchPng() {
         return new Promise((resolve) => {
-            let filenames = [
-                '201712301625-01.png',
-                '201712301625-02.png',
-                '201712301625-03.png',
-                '201712301625-04.png',
-                '201712301625-05.png',
-                '201712301625-06.png',
-                '201712301625-07.png',
-                '201712301625-08.png',
-                '201712301625-09.png',
-                '201712301625-10.png',
-                '201712301625-11.png',
-                '201712301625-12.png'
-            ];
-            resolve(filenames);
-            // let past = this.fetchPastPng();
-            // let future = this.fetchFuturePng();
-            // Promise.all([past, future]).then((filenames) => {
-            //     console.log("pngをダウンロードしました");
-            //     resolve(filenames);
-            // }).catch((e) => {
-            //     console.error(e);
-            // });
-
+            let past = this.fetchPastPng();
+            let future = this.fetchFuturePng();
+            Promise.all([past, future]).then((filenames) => {
+                console.log("pngをダウンロードしました");
+                let pastFilename = filenames[0].reverse();
+                let futureFilename = filenames[1];
+                resolve(pastFilename.concat(futureFilename));
+            }).catch((e) => {
+                console.error(e);
+            });
         });
     }
     fetchPastPng() {
         return new Promise((resolve) => {
             let requests = [];
-            for (let i = 1; i <= 12; i++) {
+            for (let i = 1; i <= 13; i++) {
                 let time = this.past.add(-5, 'minutes').format('YYYYMMDDHHmm');
                 let radar = new Promise((resolve) => {
                     let filename = time + "-00.png";
@@ -102,7 +90,7 @@ class RadarNowcat {
     fetchFuturePng() {
         return new Promise((resolve) => {
             let requests = [];
-            let time = this.now.format('YYYYMMDDHHmm');
+            let time = this.future.format('YYYYMMDDHHmm');
             for (let i = 1; i <= 12; i++) {
                 let nowcast = new Promise((resolve) => {
                     let filename = time + '-' + ('00' + i).slice(-2) + '.png';
@@ -132,12 +120,58 @@ class RadarNowcat {
                 });
         });
     }
+    postBot(filename) {
+        return new Promise((resolve) => {
+            // Load your image
+            var data = fs.readFileSync(filename);
+
+            // Make post request on media endpoint. Pass file data as media parameter
+            this.client.post('media/upload', { media: data }, (error, media, response) => {
+                if (!error) {
+                    // Lets tweet it
+                    var status = {
+                        status: this.now.format('YYYY/MM/DD HH:mm') + '\n\n' + this.temperature + '\n\n降水量\n' + this.rain + '\n\n日照値\n' + this.sun,
+                        media_ids: media.media_id_string // Pass the media id string
+                    }
+                    this.client.post('statuses/update', status, (error, tweet, response) => {
+                        if (!error) {
+                            resolve(tweet);
+                        }
+                    });
+                }
+            });
+        });
+    }
+    unlinkPng() {
+        return new Promise((resolve) => {
+
+            fs.readdir('.', function (err, files) {
+                if (err) throw err;
+                var fileList = files.filter(function (file) {
+                    return fs.statSync(file).isFile() && /.*\.png$/.test(file); //絞り込み
+                })
+                fileList.forEach((file) => {
+                    fs.unlink(file, (err) => {
+                        if (err) throw err;
+                    });
+                });
+                resolve();
+            });
+        });
+    }
 }
 let radarnowcast = new RadarNowcat();
 
-// radarnowcast.fetchTenk()
-radarnowcast.fetchPng()
-    .then(filenames => radarnowcast.pngToGif(filenames))
+radarnowcast.fetchTenk()
+    .then((text) => radarnowcast.parseTenk(text))
+    .then(() => radarnowcast.fetchPng())
+    .then((filenames) => radarnowcast.pngToGif(filenames))
+    .then((filename) => radarnowcast.postBot(filename))
+    .then(() => radarnowcast.unlinkPng())
     .then((res) => {
         console.log(res);
+        console.log("ok");
+    })
+    .catch((e) => {
+        console.error(e);
     });

@@ -29,6 +29,7 @@
     "fs": "0.0.1-security",
     "gif-creation-service": "0.0.2",
     "moment": "^2.20.1",
-    "node-fetch": "^1.7.3"
+    "node-fetch": "^1.7.3",
+    "twitter": "^1.7.1"
   }
 }
