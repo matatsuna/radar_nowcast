@@ -169,7 +169,6 @@ radarnowcast.fetchTenk()
     .then((filename) => radarnowcast.postBot(filename))
     .then(() => radarnowcast.unlinkPng())
     .then((res) => {
-        console.log(res);
         console.log("ok");
     })
     .catch((e) => {
