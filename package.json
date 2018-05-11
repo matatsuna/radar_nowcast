@@ -1,12 +1,35 @@
 {
-    "name": "my-python-app",
-    "version": "1.0.0",
-    "author": {
-        "name": "matatsuna",
-        "email": "matatsuna@gmail.com"
-    },
-    "scripts": {
-        "docker:build": "docker build --tag my-python-app .",
-        "docker:test": "docker run -it --rm --name my-running-app my-python-app"
-    }
+  "name": "radar_nowcast",
+  "version": "1.0.0",
+  "description": "現在の天気をツイートするbot",
+  "main": "index.js",
+  "scripts": {
+    "start": "babel-node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/matatsuna/radar_nowcast.git"
+  },
+  "keywords": [
+    "twitter",
+    "bot",
+    "天気",
+    "weather"
+  ],
+  "author": "matatsuna <matatsuna@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/matatsuna/radar_nowcast/issues"
+  },
+  "homepage": "https://github.com/matatsuna/radar_nowcast#readme",
+  "dependencies": {
+    "babel-cli": "^6.26.0",
+    "cheerio": "^1.0.0-rc.2",
+    "fs": "0.0.1-security",
+    "gif-creation-service": "0.0.2",
+    "moment": "^2.20.1",
+    "node-fetch": "^1.7.3",
+    "twitter": "^1.7.1"
+  }
 }
