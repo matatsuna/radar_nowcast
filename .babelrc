@@ -1,10 +1,12 @@
 {
     "presets": [
-        "env"
-    ],
-    "env": {
-        "development": {
-            "sourceMaps": "inline"
-        }
-    }
+        [
+            "env",
+            {
+                "targets": {
+                    "node": "current"
+                }
+            }
+        ]
+    ]
 }
