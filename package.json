@@ -27,8 +27,8 @@
     "babel-cli": "^6.26.0",
     "cheerio": "^1.0.0-rc.2",
     "gif-creation-service": "0.0.2",
-    "moment": "^2.22.1",
-    "node-fetch": "^2.1.2",
+    "moment": "^2.22.2",
+    "node-fetch": "^2.2.0",
     "twitter": "^1.7.1"
   }
 }
